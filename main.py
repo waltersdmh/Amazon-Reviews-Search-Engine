@@ -3,16 +3,13 @@ import string
 from nltk.corpus import stopwords
 from nltk import FreqDist
 import os
+import pager
 
 
 def inputFileToList():
-	reviewList = []
-	
-	with open("inputMSREval/f_1.txt", 'r') as f:
-		for line in f:
-			reviewList.append(line.split("\n"))
-		return reviewList
-		
+    url = "https://www.amazon.co.uk/Chelsea-Football-Club-Santa-Christmas/dp/B002X3E7C4/ref=sr_1_2?ie=UTF8&qid=1485994653&sr=8-2&keywords=chelsea+fc"
+    reviewList = pager.getReviewPages(url)
+    return reviewList
 
 def printLine(lineNo):
 	thisList = inputFileToList()
@@ -21,64 +18,33 @@ def printLine(lineNo):
 
 class Review:
 
-	def __init__(self, revId, revDate, revProduct, revProductCode, revTitle, revBody, revWeight):
+	def __init__(self, revId, revBody, revWeight):
 		self.revId = revId
-		self.revDate = revDate
-		self.revProduct = revProduct
-		self.revProductCode = revProductCode
-		self.revTitle = revTitle
 		self.revBody = revBody	
 		self.revWeight = revWeight
 		
 	def printReview(self):
 		print(self.revId)
-		print(self.revDate)
-		print(self.revProduct)
-		print(self.revProductCode)
-		print(self.revTitle)
 		print(self.revBody + "\n")
 
 
 def createRevArray():
-	counter = 0
-	reviewList = inputFileToList() # get all the reviews into one long list of strings
-##	print("reviewList length:") #test pass
-##	print(len(reviewList)) #test pass
-	reviewArray = []
+    counter = 0
+    reviewList = inputFileToList() # get all the reviews into one long list of strings
+    reviewArray = []
+    print(len(reviewList))
+    for item in reviewList: # for each review string in review list
+        revId = counter ## rev id
+    #    revParts = [] # temp array for review components
+    #    revParts.append(str(counter)) # at the id as the first component
+     #   tempString = reviewList[counter] # select the next review from the list
+        #tempString = "".join(tempString)#convert the reivew to a string (it was stored as a list with 1 element)
+   #     revParts.append(tempString) 
+        rev = Review(revId, reviewList[counter], 0)
+        counter = counter + 1
+        reviewArray.append(rev)
+    return reviewArray
 	
-	for item in reviewList: # for each review string in review list
-	#	print(counter)
-		revId = counter ## rev id
-		revParts = [] # temp array for review components
-		revParts.append(str(counter)) # at the id as the first component
-			
-	##	print("Printing revParts list:") #test pass
-	##	for item in revParts: #testpass
-	##		print(item)#testpass
-
-		tempString = reviewList[counter] # select the next review from the list
-			
-	##	print(tempString) ##testpass
-
-		tempString = "".join(tempString)#convert the reivew to a string (it was stored as a list with 1 element)
-	#	print(tempString) #test pass
-	#	print(type(tempString)) #type string 
-	
-		revParts.append((tempString.split("&&&"))) 
-	#	for item in revParts:
-	#		print(item)
-	#		print("\n")	
-		if len(revParts[1]) is 4:
-			rev = Review(revParts[0], revParts[1][0], "No Phone" , revParts[1][1], revParts[1][2], revParts[1][3], 0)
-		else:
-			rev = Review(revParts[0], revParts[1][0], revParts[1][1], revParts[1][2], revParts[1][3], revParts[1][4], 0)
-		counter = counter + 1
-	#	rev.printReview()
-		
-		reviewArray.append(rev)
-	return reviewArray
-	
-reviewArray = createRevArray() # create list of Reviews
 
 
 
@@ -137,7 +103,6 @@ stemmer = PorterStemmer()
 def searchA():
 	keyword = input("Search for: ")
 	results = []
-	reviewArray = createRevArray()
 	print("searching for: ")
 	print(keyword)
 	for rev in reviewArray:
@@ -154,35 +119,41 @@ def searchA():
 	
 			
 def searchB():
-	keyword = input("Search for: ")
-	results = []
-	reviewArray = createRevArray()
-	keyword = getTokens(keyword)
-	keyword = textFilter(keyword)
-	keyword = stemTokens(keyword, stemmer)
-	print("searching for: ")
-	for word in keyword:
-		print(word)
-	for rev in reviewArray:
-		review = rev.revBody
-		review = getTokens(review)
-		review = textFilter(review)
-		review = stemTokens(review, stemmer)
-		if str(keyword[0]) in review:
-			print("found match")
+    keyword = input("Search for: ")
+    item = 0
+    results = []
+    keyword = getTokens(keyword)
+    keyword = textFilter(keyword)
+    keyword = stemTokens(keyword, stemmer)
+    print("searching for: ")
+    for word in keyword:
+        print(word)
+    for rev in reviewArray:
+        review = rev.revBody
+        review = getTokens(review)
+        review = textFilter(review)
+        review = stemTokens(review, stemmer)
+        for item in range(len(keyword)):
+            if keyword[item] in review:
+                results.append(rev)
+                print("found match")
+            item = item + 1
+        results = list(set(results))
+            
+	#	if str(keyword[0]) in review:
+			
 	#		results.append(rev)
 			
-	for review in results:
-		print(review.printReview())
-	print("Number of matching reviews: ")
-	print(len(results))
+    for review in results:
+        print(review.printReview())
+    print("Number of matching reviews: ")
+    print(len(results))
 		
-	input("Press Enter to continue...")
-	main()			
+    input("Press Enter to continue...")
+    main()			
 	
 def searchC():
 	keyword = input("Search for: ")
-	reviewArray = createRevArray()
 	keyword = getTokens(keyword)
 	keyword = textFilter(keyword)
 	keyword = stemTokens(keyword, stemmer)
@@ -209,9 +180,10 @@ def searchC():
 		
 	input("Press Enter to continue...")
 	main()	
-			
+os.system('mode con: cols=200 lines=60')    
+reviewArray = createRevArray()			
 def main():
-	#os.system('mode con: cols=200 lines=20')
+	
 	print("Review Search Engine 1.0 \n")
 	print("This program will search for reviews based on a keyword or phrase entered \n")
 	print("Type search(function) to begin searching, where function = \n")

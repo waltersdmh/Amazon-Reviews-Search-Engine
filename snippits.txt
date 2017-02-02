@@ -1,0 +1,4 @@
+#code for the app reviews
+			#rev = Review(revParts[0], revParts[1][0], "No Phone" , revParts[1][1], revParts[1][2], revParts[1][3], 0)
+            #	else:
+            #		rev = Review(revParts[0], revParts[1][0], revParts[1][1], revParts[1][2], revParts[1][3], revParts[1][4], 0)
