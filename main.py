@@ -6,8 +6,7 @@ import os
 import pager
 
 
-def inputFileToList():
-    url = "https://www.amazon.co.uk/Chelsea-Football-Club-Santa-Christmas/dp/B002X3E7C4/ref=sr_1_2?ie=UTF8&qid=1485994653&sr=8-2&keywords=chelsea+fc"
+def inputFileToList(url):
     reviewList = pager.getReviewPages(url)
     return reviewList
 
@@ -28,9 +27,9 @@ class Review:
 		print(self.revBody + "\n")
 
 
-def createRevArray():
+def createRevArray(url):
     counter = 0
-    reviewList = inputFileToList() # get all the reviews into one long list of strings
+    reviewList = inputFileToList(url) # get all the reviews into one long list of strings
     reviewArray = []
     print(len(reviewList))
     for item in reviewList: # for each review string in review list
@@ -110,12 +109,8 @@ def searchA():
 		if keyword in review:
 			print("found match")
 			results.append(rev)		
-	for review in results:
-		print(review.printReview())
-	print("Number of matching reviews: ")
-	print(len(results))
-	input("Press Enter to continue...")
-	main()
+	return results
+
 	
 			
 def searchB():
@@ -144,15 +139,11 @@ def searchB():
 			
 	#		results.append(rev)
 			
-    for review in results:
-        print(review.printReview())
-    print("Number of matching reviews: ")
-    print(len(results))
-		
-    input("Press Enter to continue...")
-    main()			
+    return results
+			
 	
 def searchC():
+	results = []
 	keyword = input("Search for: ")
 	keyword = getTokens(keyword)
 	keyword = textFilter(keyword)
@@ -174,37 +165,51 @@ def searchC():
 	
 	#print the top 3
 	reviewArray.sort(key = lambda x: x.revWeight)
-	reviewArray[-3].printReview()
-	reviewArray[-2].printReview()
-	reviewArray[-1].printReview()			
+	results.append(reviewArray[-3])
+	results.append(reviewArray[-2])
+	results.append(reviewArray[-1])			
 		
-	input("Press Enter to continue...")
-	main()	
-os.system('mode con: cols=200 lines=60')    
-reviewArray = createRevArray()			
-def main():
-	
-	print("Review Search Engine 1.0 \n")
-	print("This program will search for reviews based on a keyword or phrase entered \n")
-	print("Type search(function) to begin searching, where function = \n")
-	print("a = standard keyword match search. results are based on order of occurence(the type used by amazon.com)")
-	print("b = one word key search. Tokenization + filtering + stemming ")
-	print("c = search b + frequency distribution")
+	return results
+  
+		
+
+
+
+def userInput():
+	results = []
 	inputFunction = input("")
 	if inputFunction == "search(a)":
-		searchA()
+		results = searchA()
+		for review in results:
+			reviews.printReview()
 	elif inputFunction == "search(b)":
-		searchB()
+		results = searchB()
+		for review in results:
+			review.printReview()
 	elif inputFunction == "search(c)":
-		searchC()
-		print("")
+		results = searchC()
+		for review in results:
+			review.printReview()
 	else:
 		print("invalid search criteria")
-		main()
+	input("press any key")
+	main()
+
+
+def main():
+    os.system('mode con: cols=200 lines=60')
+    print("Review Search Engine 1.0 \n")
+    print("This program will search for reviews based on a keyword or phrase entered \n")
+    print("Type search(function) to begin searching, where function = \n")
+    print("a = standard keyword match search. results are based on order of occurence(the type used by amazon.com)")
+    print("b = search a + Tokenization + filtering + stemming ")
+    print("c = search b + frequency distribution")
+    userInput()
+	
+
 		
-
-
-
+url = "https://www.amazon.co.uk/Chelsea-Football-Club-Santa-Christmas/dp/B002X3E7C4/ref=sr_1_2?ie=UTF8&qid=1485994653&sr=8-2&keywords=chelsea+fc"
+reviewArray = createRevArray(url)
 main()
 
 
