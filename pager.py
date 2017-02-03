@@ -11,17 +11,14 @@ import random
 
 
 
-
-
 #input: url of product page (initially amazon, then other websties)
 #output: list of url's of the prodicts review page.
 
 def getReviewPages(url):
+    print("pager.getReviewPages started")
     reviews = []
     position = url.index("/dp/")+4
     asin = url[position:position+10]
-    
-    
     req = urllib.request.Request(
     url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=1", 
     data=None, 
@@ -52,7 +49,7 @@ def getReviewPages(url):
         for row in soup.find_all('div',attrs={"class" : "a-row review-data"}):
             reviews.append(row.text)
         pageNum = pageNum + 1
-
+    print("pager.getReviewPages finished")
     return reviews
  #   print(*reviews, sep='\n')
  #   print(len(reviews))

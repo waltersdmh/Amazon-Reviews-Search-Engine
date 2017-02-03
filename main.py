@@ -4,6 +4,7 @@ from nltk.corpus import stopwords
 from nltk import FreqDist
 import os
 import pager
+import json
 
 
 def inputFileToList(url):
@@ -39,7 +40,7 @@ def createRevArray(url):
      #   tempString = reviewList[counter] # select the next review from the list
         #tempString = "".join(tempString)#convert the reivew to a string (it was stored as a list with 1 element)
    #     revParts.append(tempString) 
-        rev = Review(revId, reviewList[counter], 0)
+        rev = Review(revId, reviewList[counter], 0.0)
         counter = counter + 1
         reviewArray.append(rev)
     return reviewArray
@@ -99,11 +100,8 @@ stemmer = PorterStemmer()
 
 #traditional -in order of occurance - search used by amazon
 #input keyword or phrase
-def searchA():
-	keyword = input("Search for: ")
+def searchA(keyword):
 	results = []
-	print("searching for: ")
-	print(keyword)
 	for rev in reviewArray:
 		review = rev.revBody
 		if keyword in review:
@@ -113,38 +111,8 @@ def searchA():
 
 	
 			
-def searchB():
-    keyword = input("Search for: ")
-    item = 0
-    results = []
-    keyword = getTokens(keyword)
-    keyword = textFilter(keyword)
-    keyword = stemTokens(keyword, stemmer)
-    print("searching for: ")
-    for word in keyword:
-        print(word)
-    for rev in reviewArray:
-        review = rev.revBody
-        review = getTokens(review)
-        review = textFilter(review)
-        review = stemTokens(review, stemmer)
-        for item in range(len(keyword)):
-            if keyword[item] in review:
-                results.append(rev)
-                print("found match")
-            item = item + 1
-        results = list(set(results))
-            
-	#	if str(keyword[0]) in review:
-			
-	#		results.append(rev)
-			
-    return results
-			
-	
-def searchC():
+def searchB(keyword):
 	results = []
-	keyword = input("Search for: ")
 	keyword = getTokens(keyword)
 	keyword = textFilter(keyword)
 	keyword = stemTokens(keyword, stemmer)
@@ -155,62 +123,111 @@ def searchC():
 		review = rev.revBody
 		review = getTokens(review)
 		review = textFilter(review)
-		review = stemTokens(review, stemmer)	
-		fdist = FreqDist(review)
-	#	rev.revWeight = fdist[str(keyword[0])]
+		review = stemTokens(review, stemmer)
+		if all((w in review for w in keyword)):
+			results.append(rev)
+			print("found match")
+
 		
-		for word in keyword:
-			#print(keyword.index(word))
-			rev.revWeight = rev.revWeight + fdist[str(keyword[keyword.index(word)])]
-	
-	#print the top 3
-	reviewArray.sort(key = lambda x: x.revWeight)
-	results.append(reviewArray[-3])
-	results.append(reviewArray[-2])
-	results.append(reviewArray[-1])			
-		
+
+	#	if str(keyword[0]) in review:
+			
+	#		results.append(rev)
+			
 	return results
-  
-		
-
-
-
-def userInput():
+			
+	
+def searchC(keywords):
+	print("Search C started")
 	results = []
-	inputFunction = input("")
-	if inputFunction == "search(a)":
-		results = searchA()
-		for review in results:
-			reviews.printReview()
-	elif inputFunction == "search(b)":
-		results = searchB()
-		for review in results:
-			review.printReview()
-	elif inputFunction == "search(c)":
-		results = searchC()
-		for review in results:
-			review.printReview()
-	else:
-		print("invalid search criteria")
-	input("press any key")
-	main()
+	keyword = keywords
+	keyword = getTokens(keyword)
+	keyword = textFilter(keyword)
+	keyword = stemTokens(keyword, stemmer)
+	
+	print("searching for: ")
+	for word in keyword:
+		print(word)
+	for rev in reviewArray:
+		review = rev.revBody
+		review = getTokens(review)
+		review = textFilter(review)
+		review = stemTokens(review, stemmer)	
+		if all((w in review for w in keyword)):
+			results.append(rev)
+		fdist = FreqDist(review)
+		for word in keyword:
+			rev.revWeight = rev.revWeight + float(fdist[str(word)])
+			
+	#	rev.revWeight = fdist[str(keyword[0])]
+
+#  	#print the top 10
+	results.sort(key = lambda x: x.revWeight)
+	
+	
+	results.reverse()
+	return results
+
+def r2json(results):
+	print("r2json started. converting restults to json")
+	lines = []
+	simplejson = json
+	f = open("data.txt","w")
+	for rev in results:
+		lines.append(rev.revBody)
+	for item in lines:
+		print(item)
+	simplejson.dump(lines, f)
+	f.close()
 
 
-def main():
-    os.system('mode con: cols=200 lines=60')
-    print("Review Search Engine 1.0 \n")
-    print("This program will search for reviews based on a keyword or phrase entered \n")
-    print("Type search(function) to begin searching, where function = \n")
-    print("a = standard keyword match search. results are based on order of occurence(the type used by amazon.com)")
-    print("b = search a + Tokenization + filtering + stemming ")
-    print("c = search b + frequency distribution")
-    userInput()
+
+# def userInput():
+# 	results = []
+# 	inputFunction = input("")
+# 	if inputFunction == "search(a)":
+# 		keyword = input("Search for: ")
+# 		results = searchA(keyword)
+# 		for review in results:
+# 			review.printReview()
+# 		r2json(results)
+# 	elif inputFunction == "search(b)":
+# 		keyword = input("Search for: ")
+# 		results = searchB(keyword)
+# 		for review in results:
+# 			review.printReview()
+# 	elif inputFunction == "search(c)":
+# 		keyword = input("Search for: ")
+# 		results = searchC(keyword)
+# 		for review in results:
+# 			review.printReview()
+# 			print(review.revWeight)
+# 	else:
+# 		print("invalid search criteria")
+# 	input("press any key to continue")
+# 	main()
+
+
+#def main():
+    # os.system('mode con: cols=200 lines=60')
+    # print("Review Search Engine 1.0 \n")
+    # print("This program will search for reviews based on a keyword or phrase entered \n")
+    # print("Type search(function) to begin searching, where function = \n")
+    # print("a = standard keyword match search. results are based on order of occurence(the type used by amazon.com)")
+    # print("b = search a + Tokenization + filtering + stemming ")
+    # print("c = search b + frequency distribution")
+    # userInput()
+    
+			
+	
 	
 
-		
-url = "https://www.amazon.co.uk/Chelsea-Football-Club-Santa-Christmas/dp/B002X3E7C4/ref=sr_1_2?ie=UTF8&qid=1485994653&sr=8-2&keywords=chelsea+fc"
+url = "https://www.amazon.co.uk/LG-LAS260B-Bluetooth-Jack-input-mountable/dp/B01AHJTP22/ref=sr_1_3?s=receiver-speakers&rps=1&ie=UTF8&qid=1486132598&sr=1-3"    
+keywords = "quality"	
 reviewArray = createRevArray(url)
-main()
+results = searchC(keywords)
+r2json(results)
+
 
 
 	
