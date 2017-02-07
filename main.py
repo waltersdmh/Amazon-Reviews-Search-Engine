@@ -137,7 +137,7 @@ def searchB(keyword):
 	return results
 			
 	
-def searchC(keywords):
+def searchC(keywords, reviewArray):
 	print("Search C started")
 	results = []
 	keyword = keywords
@@ -220,13 +220,14 @@ def r2json(results):
     
 			
 	
+def main(message):
+	args = message.split(",")
+	keywords = args[0]
+	url = args[1]
+	reviewArray = createRevArray(url)
+	results = searchC(keywords, reviewArray)
+	r2json(results)
 	
-
-url = "https://www.amazon.co.uk/LG-LAS260B-Bluetooth-Jack-input-mountable/dp/B01AHJTP22/ref=sr_1_3?s=receiver-speakers&rps=1&ie=UTF8&qid=1486132598&sr=1-3"    
-keywords = "quality"	
-reviewArray = createRevArray(url)
-results = searchC(keywords)
-r2json(results)
 
 
 
