@@ -7,6 +7,9 @@ import pager
 import json
 
 
+
+
+
 def inputFileToList(url):
     reviewList = pager.getReviewPages(url)
     return reviewList
@@ -135,7 +138,8 @@ def searchB(keyword):
 	#		results.append(rev)
 			
 	return results
-			
+	
+		
 	
 def searchC(keywords, reviewArray):
 	print("Search C started")
@@ -144,6 +148,7 @@ def searchC(keywords, reviewArray):
 	keyword = getTokens(keyword)
 	keyword = textFilter(keyword)
 	keyword = stemTokens(keyword, stemmer)
+	resetWeight(reviewArray)
 	
 	print("searching for: ")
 	for word in keyword:
@@ -153,20 +158,39 @@ def searchC(keywords, reviewArray):
 		review = getTokens(review)
 		review = textFilter(review)
 		review = stemTokens(review, stemmer)	
-		if all((w in review for w in keyword)):
-			results.append(rev)
 		fdist = FreqDist(review)
 		for word in keyword:
-			rev.revWeight = rev.revWeight + float(fdist[str(word)])
+			#rev.revWeight = rev.revWeight + float(fdist[str(word)])
+			tempWeight = float(fdist[str(word)])
+			if tempWeight < 1:
+				rev.revWeight = rev.revWeight + 0 
+			elif tempWeight < 3:
+				rev.revWeight = rev.revWeight + 1
+			elif tempWeight < 5:
+				rev.revWeight = rev.revWeight+ 2
+			else:
+				rev.revWeight = rev.revWeight+3
+		
+		if all((w in review for w in keyword)):
+			rev.revWeight = rev.revWeight + 2
+		
+		if " ".join(keywords) in rev.revBody:
+			rev.revWeight = rev.revWeight + 5
 			
 	#	rev.revWeight = fdist[str(keyword[0])]
-
+	
+		if rev.revWeight > 0.5:
+			results.append(rev)
 #  	#print the top 10
 	results.sort(key = lambda x: x.revWeight)
-	
+	#remove where 0
 	
 	results.reverse()
 	return results
+
+def resetWeight(reviews):
+	for rev in reviews:
+		rev.revWeight = 0;
 
 def r2json(results):
 	print("r2json started. converting restults to json")
@@ -224,9 +248,20 @@ def main(message):
 	args = message.split(",")
 	keywords = args[0]
 	url = args[1]
-	reviewArray = createRevArray(url)
-	results = searchC(keywords, reviewArray)
-	r2json(results)
+	# if url exists within server.urlarray
+	import server
+	num = server.searchNo
+	if num == 0: 
+		server.searchNo = 1
+		reviewArray = createRevArray(url)
+		server.serverReviewArray = reviewArray
+		results = searchC(keywords, reviewArray)
+		r2json(results)
+	else:
+		reviewArray = server.serverReviewArray
+		results = searchC(keywords, reviewArray)
+		r2json(results)
+		
 	
 
 

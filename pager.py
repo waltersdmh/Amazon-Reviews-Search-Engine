@@ -31,7 +31,11 @@ def getReviewPages(url):
     #return the number of review pages. numPage = number of pages
     stringNum = str(soup.find_all('span', attrs={"class" : "a-size-medium totalReviewCount"}))
     numPage = ''.join(x for x in stringNum if x.isdigit())
-    numPage = int(int(numPage) / 10)+1 #remove rounding errors. 
+    print(numPage)
+    print(type(numPage))
+    numPage = int(numPage)
+    numPage = numPage / 10
+    numPage = round(numPage) + 1
     pageNum = 1
     #for every page, get all reviews. #second delay. for testing purposes, change numPage to small number.
     for page in range(numPage):
