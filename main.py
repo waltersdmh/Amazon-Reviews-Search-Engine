@@ -251,18 +251,16 @@ def main(message):
 	# if url exists within server.urlarray
 	import server
 	num = server.searchNo
-	if num == 0: 
-		server.searchNo = 1
+	if url == server.currenturl: 	
+		results = searchC(keywords, server.serverReviewArray)
+		r2json(results)
+	else:
+		server.currenturl = url		
 		reviewArray = createRevArray(url)
 		server.serverReviewArray = reviewArray
 		results = searchC(keywords, reviewArray)
 		r2json(results)
-	else:
-		reviewArray = server.serverReviewArray
-		results = searchC(keywords, reviewArray)
-		r2json(results)
-		
-	
+
 
 
 
