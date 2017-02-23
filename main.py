@@ -162,20 +162,24 @@ def searchC(keywords, reviewArray):
 		for word in keyword:
 			#rev.revWeight = rev.revWeight + float(fdist[str(word)])
 			tempWeight = float(fdist[str(word)])
-			if tempWeight < 1:
+			if tempWeight == 0:
 				rev.revWeight = rev.revWeight + 0 
-			elif tempWeight < 3:
+			elif tempWeight == 1:
 				rev.revWeight = rev.revWeight + 1
-			elif tempWeight < 5:
+			elif tempWeight == 2:
 				rev.revWeight = rev.revWeight+ 2
+			elif tempWeight == 3:
+				rev.revWeight = rev.revWeight+ 3
+			elif tempWeight == 4:
+				rev.revWeight = rev.revWeight+ 4
 			else:
-				rev.revWeight = rev.revWeight+3
+				rev.revWeight = rev.revWeight+5
 		
 		if all((w in review for w in keyword)):
-			rev.revWeight = rev.revWeight + 2
+			rev.revWeight = rev.revWeight + 4
 		
 		if " ".join(keywords) in rev.revBody:
-			rev.revWeight = rev.revWeight + 5
+			rev.revWeight = rev.revWeight + 6
 			
 	#	rev.revWeight = fdist[str(keyword[0])]
 	
