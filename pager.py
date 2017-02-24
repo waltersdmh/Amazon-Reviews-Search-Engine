@@ -9,10 +9,12 @@ import time
 import re
 import random 
 import threading
+import re
 
 reviews = []
 numPage = 0
-asin = ""
+asin =""
+keywords = ""
 
    #threading 
 
@@ -41,7 +43,7 @@ def getPages(beg, end):
         print("Thread ", threading.current_thread().getName(), " is fetching", pageNum+beg)
         #print(pageNum+beg)
         req = urllib.request.Request(
-        url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=" + str(pageNum + beg), 
+        url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=" + str(pageNum + beg) + "&filterByKeyword=" + keywords, 
         data=None, 
         headers={
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
@@ -58,44 +60,84 @@ def getPages(beg, end):
 
 
 
-
-
-
-
-
-
-
 #input: url of product page (initially amazon, then other websties)
 #output: list of url's of the prodicts review page.
 
-def getReviewPages(url):
-    print("pager.getReviewPages started")
-    global reviews
+def getReviewPages(url, searchTerms):
+
+   
+    global keywords
+    keywords = searchTerms.replace(" ","+") # keywords seperated by +. W
+    
+    print("Keyterms: " + keywords)
+    global reviews #provide access the to global reviews var
     reviews = []
-    position = url.index("/dp/")+4
+    
+    position = url.index("/dp/")+4 #position in the url to get asin. need to rework
     global asin
     asin = url[position:position+10]
+    
+    #find out how many revies there are on amazon, with the given keyterms
+    
     req = urllib.request.Request(
-    url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=1", 
+    url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=1&filterByKeyword=" + keywords, 
     data=None, 
     headers={
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
     })
     f = urllib.request.urlopen(req)
     soup = BeautifulSoup(f, "html.parser")
     
+    
     #return the number of review pages. numPage = number of pages
-    stringNum = str(soup.find_all('span', attrs={"class" : "a-size-medium totalReviewCount"}))
-    global numPage
-    numPage = ''.join(x for x in stringNum if x.isdigit())
-    print("number of reviews:")
-    print(numPage)
-    print(type(numPage))
-    numPage = int(numPage)
-    numPage = numPage / 10
-    numPage = round(numPage) + 1
-    print("number of pages:")
-    print(numPage)
+    #for row in soup.find_all('div',attrs={"class" : "a-section a-spacing-none review-views celwidget"}):
+       # print(row.text)
+    #print(soup)
+    for row in soup.find_all('li',attrs={"class" : "page-button"}):
+        print(row.text)
+        global numPage
+        numPage = int(row.text)
+        print(numPage)
+   
+    
+    
+    
+    
+ #   for row in soup.find_all('li',attrs={"class" : "page-button"}):
+  #      print(row.text)
+    
+    
+    
+    #stringNum = soup.find("div", id="cm_cr-review_list").find("div", class_="a-section a-spacing-medium").find("span", class_="a-size-base").text
+    #print(stringNum)
+    
+    
+    #start = "of"
+    #end = "reviews"
+  #  str(stringNum)
+  #  numPage = re.search('%s(.*)%s' % (start, end), stringNum).group(1) #w
+  #  numPage.replace(" ", "")
+   # numPage = int(numPage)
+    #print(stringNum)
+   # global numPage
+#    numPage = ''.join(x for x in stringNum if x.isdigit())
+    
+    
+    
+    
+
+    
+
+
+
+    #print("number of reviews:")
+    #print(numPage)
+    #print(type(numPage))
+   # numPage = int(numPage)
+   # numPage = numPage / 10
+   # numPage = round(numPage) + 1
+    #print("number of pages:")
+    #print(numPage)
     pageNum = 1
     
     t1 = threading.Thread(name = "t1", target=pageScraper)

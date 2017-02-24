@@ -10,8 +10,9 @@ import json
 
 
 
-def inputFileToList(url):
-    reviewList = pager.getReviewPages(url)
+def inputFileToList(url, keywords):
+    reviewList = pager.getReviewPages(url, keywords)
+    print(reviewList)
     return reviewList
 
 def printLine(lineNo):
@@ -31,9 +32,9 @@ class Review:
 		print(self.revBody + "\n")
 
 
-def createRevArray(url):
+def createRevArray(url, keywords):
     counter = 0
-    reviewList = inputFileToList(url) # get all the reviews into one long list of strings
+    reviewList = inputFileToList(url, keywords) # get all the reviews into one long list of strings
     reviewArray = []
     print(len(reviewList))
     for item in reviewList: # for each review string in review list
@@ -252,18 +253,20 @@ def main(message):
 	args = message.split(",")
 	keywords = args[0]
 	url = args[1]
-	# if url exists within server.urlarray
-	import server
-	num = server.searchNo
-	if url == server.currenturl: 	
-		results = searchC(keywords, server.serverReviewArray)
-		r2json(results)
-	else:
-		server.currenturl = url		
-		reviewArray = createRevArray(url)
-		server.serverReviewArray = reviewArray
-		results = searchC(keywords, reviewArray)
-		r2json(results)
+	
+	
+	# if url exists within server.urlarray / temp remove this
+#	import server
+#	num = server.searchNo
+#	if url == server.currenturl: 	
+#		results = searchC(keywords, server.serverReviewArray)
+#		r2json(results)
+#	server.currenturl = url		
+	reviewArray = createRevArray(url, keywords)
+	print(reviewArray)
+#	server.serverReviewArray = reviewArray
+	results = searchC(keywords, reviewArray)
+	r2json(results)
 
 
 

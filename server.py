@@ -14,9 +14,9 @@ Messages are output to the terminal for debuggin purposes.
 global searchNo
 global reviewArray 
 
-searchNo = 0
-serverReviewArray = []
-currenturl = ""
+#searchNo = 0
+#serverReviewArray = []
+#currenturl = ""
 
 
 class WSHandler(tornado.websocket.WebSocketHandler):
@@ -43,8 +43,8 @@ class WSHandler(tornado.websocket.WebSocketHandler):
  
     def on_close(self):
         print ('connection closed')
-        searchNo = 0
-        serverReviewArray = []
+       # searchNo = 0
+       # serverReviewArray = []
     def check_origin(self, origin):
         return True
 
@@ -58,6 +58,7 @@ application = tornado.web.Application([
  
 if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(application)
+
     http_server.listen(8888)
     myIP = socket.gethostbyname(socket.gethostname())
     print ('*** Websocket Server Started at %s***' % myIP)
