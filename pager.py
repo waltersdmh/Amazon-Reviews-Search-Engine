@@ -12,7 +12,7 @@ import threading
 import re
 
 reviews = []
-numPage = 0
+numPage = 1
 asin =""
 keywords = ""
 
@@ -20,7 +20,13 @@ keywords = ""
 
 def pageScraper():
     global numpage
+    #print(numPage)
     threadGap = int(numPage/4)
+    
+    if numPage == 0:
+        if threading.current_thread().getName() == "t1":
+            getPages(0, 1)
+            
 #    print(threading.current_thread().getName())
     if threading.current_thread().getName() == "t1":
         getPages(1, threadGap)
@@ -37,8 +43,11 @@ def pageScraper():
 def getPages(beg, end):
     global asin
     global reviews
+    global numPage
     duration = end - beg
-    pageNum = 0
+    pageNum = 1
+    if duration == 0:
+        duration =1
     for page in range(duration):
         print("Thread ", threading.current_thread().getName(), " is fetching", pageNum+beg)
         #print(pageNum+beg)
@@ -64,8 +73,6 @@ def getPages(beg, end):
 #output: list of url's of the prodicts review page.
 
 def getReviewPages(url, searchTerms):
-
-   
     global keywords
     keywords = searchTerms.replace(" ","+") # keywords seperated by +. W
     
@@ -90,14 +97,28 @@ def getReviewPages(url, searchTerms):
     
     
     #return the number of review pages. numPage = number of pages
+    
+    stringNum = soup.find("div", id="cm_cr-review_list").find("div", class_="a-section a-spacing-medium").find("span", class_="a-size-base").text
+   # print(stringNum) 
+    start = "of"
+    end = "reviews"
+    str(stringNum)
+    global numPage
+    numPage = re.search('%s(.*)%s' % (start, end), stringNum).group(1) #w
+    numPage.replace(" ", "")
+    numPage = int(numPage)/10
+    numPage = int(numPage)
+    print("Number of pages: "  + str(numPage))
+    
+    
     #for row in soup.find_all('div',attrs={"class" : "a-section a-spacing-none review-views celwidget"}):
        # print(row.text)
     #print(soup)
-    for row in soup.find_all('li',attrs={"class" : "page-button"}):
-        print(row.text)
-        global numPage
-        numPage = int(row.text)
-        print(numPage)
+    #for row in soup.find_all('li',attrs={"class" : "page-button"}):
+    #    print(row.text)
+    #    global numPage
+    #    numPage = int(row.text)
+    #    print(numPage)
    
     
     
@@ -112,10 +133,7 @@ def getReviewPages(url, searchTerms):
     #print(stringNum)
     
     
-    #start = "of"
-    #end = "reviews"
-  #  str(stringNum)
-  #  numPage = re.search('%s(.*)%s' % (start, end), stringNum).group(1) #w
+
   #  numPage.replace(" ", "")
    # numPage = int(numPage)
     #print(stringNum)
