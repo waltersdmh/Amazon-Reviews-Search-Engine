@@ -154,6 +154,8 @@ def searchC(keywords, reviewArray):
 	print("searching for: ")
 	for word in keyword:
 		print(word)
+				
+	
 	for rev in reviewArray:
 		review = rev.revBody
 		review = getTokens(review)

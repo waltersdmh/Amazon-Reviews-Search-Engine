@@ -10,11 +10,19 @@ import re
 import random 
 import threading
 import re
+from random import choice
 
 reviews = []
 numPage = 1
 asin =""
 keywords = ""
+
+
+
+
+
+
+
 
    #threading 
 
@@ -39,6 +47,16 @@ def pageScraper():
 
 
 
+def random_spoof():
+    UAS = ['Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.97 Safari/537.11','Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/20100101 Firefox/17.0','Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/536.26.17 (KHTML, like Gecko) Version/6.0.2 Safari/536.26.17',
+'Mozilla/5.0 (Linux; U; Android 2.2; fr-fr; Desire_A8181 Build/FRF91) App3leWebKit/53.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1','Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; FunWebProducts; .NET CLR 1.1.4322; PeoplePal 6.2)','Mozilla/5.0 (Windows NT 5.1; rv:13.0) Gecko/20100101 Firefox/13.0.1','Opera/9.80 (Windows NT 5.1; U; en) Presto/2.10.289 Version/12.01','Mozilla/5.0 (Windows NT 5.1; rv:5.0.1) Gecko/20100101 Firefox/5.0.1','Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 3.5.30729)']
+    return(choice(UAS))
+
+
+
+
+
+
 
 def getPages(beg, end):
     global asin
@@ -46,6 +64,8 @@ def getPages(beg, end):
     global numPage
     duration = end - beg
     pageNum = 1
+    
+    
     if duration == 0:
         duration =1
     for page in range(duration):
@@ -54,8 +74,7 @@ def getPages(beg, end):
         req = urllib.request.Request(
         url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=" + str(pageNum + beg) + "&filterByKeyword=" + keywords, 
         data=None, 
-        headers={
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+        headers={'User-Agent':random_spoof()
     })
         f = urllib.request.urlopen(req)
         soup = BeautifulSoup(f, "html.parser")
@@ -79,8 +98,19 @@ def getReviewPages(url, searchTerms):
     print("Keyterms: " + keywords)
     global reviews #provide access the to global reviews var
     reviews = []
+    position = 0
+    # try:
+    #     position = url.index("/dp/")+4 #position in the url to get asin. need to rework
+    #     print(position)
+    # except ValueError:
+    #     position = url.index("/product/")+9
+    #     print(position)
+    print(position)
     
-    position = url.index("/dp/")+4 #position in the url to get asin. need to rework
+    position = url.index("ref=")-11
+    print(position)
+    
+    
     global asin
     asin = url[position:position+10]
     
@@ -89,8 +119,8 @@ def getReviewPages(url, searchTerms):
     req = urllib.request.Request(
     url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=1&filterByKeyword=" + keywords, 
     data=None, 
-    headers={
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+    headers={'User-Agent':random_spoof()
+        #'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
     })
     f = urllib.request.urlopen(req)
     soup = BeautifulSoup(f, "html.parser")
