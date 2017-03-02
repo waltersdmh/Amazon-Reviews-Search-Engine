@@ -200,11 +200,11 @@ def resetWeight(reviews):
 	for rev in reviews:
 		rev.revWeight = 0;
 
-def r2json(results):
+def r2json(results, clientCode):
 	#print("r2json started. converting restults to json")
 	lines = []
 	simplejson = json
-	f = open("data.txt","w")
+	f = open(clientCode+".txt","w")
 	for rev in results:
 		lines.append(rev.revBody)
 	#for item in lines:
@@ -252,7 +252,7 @@ def r2json(results):
     
 			
 	
-def main(message):
+def main(message, clientCode):
 	args = message.split(",")
 	keywords = args[0]
 	url = args[1]
@@ -274,7 +274,7 @@ def main(message):
 	#print(reviewArray)
 #	server.serverReviewArray = reviewArray
 	results = searchC(keywords, reviewArray)
-	r2json(results)
+	r2json(results, clientCode)
 
 
 
