@@ -11,13 +11,13 @@ import json
 
 
 def inputFileToList(url, keywords):
-    reviewList = pager.getReviewPages(url, keywords)
-    print(reviewList)
+    reviewList = pager.startGetPages(url, keywords)
+    #print(reviewList)
     return reviewList
 
 def printLine(lineNo):
 	thisList = inputFileToList()
-	print(thisList[lineNo]);
+	#print(thisList[lineNo]);
 
 
 class Review:
@@ -28,26 +28,27 @@ class Review:
 		self.revWeight = revWeight
 		
 	def printReview(self):
-		print(self.revId)
-		print(self.revBody + "\n")
+		#print(self.revId)
+		#print(self.revBody + "\n")
+		print()
 
 
 def createRevArray(url, keywords):
-    counter = 0
-    reviewList = inputFileToList(url, keywords) # get all the reviews into one long list of strings
-    reviewArray = []
-    print(len(reviewList))
-    for item in reviewList: # for each review string in review list
-        revId = counter ## rev id
-    #    revParts = [] # temp array for review components
-    #    revParts.append(str(counter)) # at the id as the first component
-     #   tempString = reviewList[counter] # select the next review from the list
-        #tempString = "".join(tempString)#convert the reivew to a string (it was stored as a list with 1 element)
+	counter = 0
+	reviewList = inputFileToList(url, keywords) # get all the reviews into one long list of strings
+	reviewArray = []
+	#print(len(reviewList))
+	for item in reviewList: # for each review string in review list
+		revId = counter ## rev id
+#    revParts = [] # temp array for review components
+#    revParts.append(str(counter)) # at the id as the first component
+#   tempString = reviewList[counter] # select the next review from the list
+#tempString = "".join(tempString)#convert the reivew to a string (it was stored as a list with 1 element)
    #     revParts.append(tempString) 
-        rev = Review(revId, reviewList[counter], 0.0)
-        counter = counter + 1
-        reviewArray.append(rev)
-    return reviewArray
+		rev = Review(revId, reviewList[counter], 0.0)
+		counter = counter + 1
+		reviewArray.append(rev)
+	return reviewArray
 	
 
 
@@ -120,9 +121,9 @@ def searchB(keyword):
 	keyword = getTokens(keyword)
 	keyword = textFilter(keyword)
 	keyword = stemTokens(keyword, stemmer)
-	print("searching for: ")
-	for word in keyword:
-		print(word)
+	# print("searching for: ")
+	# for word in keyword:
+	# 	print(word)
 	for rev in reviewArray:
 		review = rev.revBody
 		review = getTokens(review)
@@ -143,7 +144,7 @@ def searchB(keyword):
 		
 	
 def searchC(keywords, reviewArray):
-	print("Search C started")
+	#print("Search C started")
 	results = []
 	keyword = keywords
 	keyword = getTokens(keyword)
@@ -151,9 +152,9 @@ def searchC(keywords, reviewArray):
 	keyword = stemTokens(keyword, stemmer)
 	resetWeight(reviewArray)
 	
-	print("searching for: ")
-	for word in keyword:
-		print(word)
+	#print("searching for: ")
+	#for word in keyword:
+	#	print(word)
 				
 	
 	for rev in reviewArray:
@@ -200,14 +201,14 @@ def resetWeight(reviews):
 		rev.revWeight = 0;
 
 def r2json(results):
-	print("r2json started. converting restults to json")
+	#print("r2json started. converting restults to json")
 	lines = []
 	simplejson = json
 	f = open("data.txt","w")
 	for rev in results:
 		lines.append(rev.revBody)
-	for item in lines:
-		print(item)
+	#for item in lines:
+		#print(item)
 	simplejson.dump(lines, f)
 	f.close()
 
@@ -255,7 +256,11 @@ def main(message):
 	args = message.split(",")
 	keywords = args[0]
 	url = args[1]
+	rating = args[2]
+	type = args[3]
 	
+	#print(rating)
+	#print(type)
 	
 	# if url exists within server.urlarray / temp remove this
 #	import server
@@ -263,9 +268,10 @@ def main(message):
 #	if url == server.currenturl: 	
 #		results = searchC(keywords, server.serverReviewArray)
 #		r2json(results)
-#	server.currenturl = url		
+#	server.currenturl = url	
+
 	reviewArray = createRevArray(url, keywords)
-	print(reviewArray)
+	#print(reviewArray)
 #	server.serverReviewArray = reviewArray
 	results = searchC(keywords, reviewArray)
 	r2json(results)

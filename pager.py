@@ -31,7 +31,7 @@ def pageScraper():
     #print(numPage)
     threadGap = int(numPage/4)
     
-    if numPage == 0:
+    if numPage <= 1:
         if threading.current_thread().getName() == "t1":
             getPages(0, 1)
             
@@ -105,16 +105,16 @@ def getReviewPages(url, searchTerms):
     # except ValueError:
     #     position = url.index("/product/")+9
     #     print(position)
-    print(position)
+    #print(position)
     
     position = url.index("ref=")-11
-    print(position)
+    #print(position)
     
     
     global asin
     asin = url[position:position+10]
     
-    #find out how many revies there are on amazon, with the given keyterms
+
     
     req = urllib.request.Request(
     url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=1&filterByKeyword=" + keywords, 
@@ -124,12 +124,13 @@ def getReviewPages(url, searchTerms):
     })
     f = urllib.request.urlopen(req)
     soup = BeautifulSoup(f, "html.parser")
-    
-    
-    #return the number of review pages. numPage = number of pages
-    
+        
+
+#find out how many reviews there are on amazon, with the given keyterms   
+
+
     stringNum = soup.find("div", id="cm_cr-review_list").find("div", class_="a-section a-spacing-medium").find("span", class_="a-size-base").text
-   # print(stringNum) 
+# print(stringNum) 
     start = "of"
     end = "reviews"
     str(stringNum)
@@ -139,6 +140,8 @@ def getReviewPages(url, searchTerms):
     numPage = int(numPage)/10
     numPage = int(numPage)
     print("Number of pages: "  + str(numPage))
+    
+    
     
     
     #for row in soup.find_all('div',attrs={"class" : "a-section a-spacing-none review-views celwidget"}):
@@ -252,6 +255,20 @@ def getReviewPages(url, searchTerms):
  #   print(len(reviews))
     
     
-   
+def startGetPages(url, searchTerms):
+    reviews = []
+    for num in range(3):
+        try:
+            reviews = getReviewPages(url, searchTerms)
+            if len(reviews)>=1:
+                break
+        except Exception as e:
+            print("CAPTCHA RETRY")
+            print(str(e))
+            time.sleep(random.randint(1,2))
+            continue
+    print(len(reviews))
+    return reviews
+    
    
    
