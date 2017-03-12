@@ -10,8 +10,8 @@ import json
 
 
 
-def inputFileToList(url, keywords):
-    reviewList = pager.startGetPages(url, keywords)
+def inputFileToList(url, keywords, type, rating):
+    reviewList = pager.startGetPages(url, keywords, type, rating)
     #print(reviewList)
     return reviewList
 
@@ -33,9 +33,9 @@ class Review:
 		print()
 
 
-def createRevArray(url, keywords):
+def createRevArray(url, keywords, type, rating):
 	counter = 0
-	reviewList = inputFileToList(url, keywords) # get all the reviews into one long list of strings
+	reviewList = inputFileToList(url, keywords, type, rating) # get all the reviews into one long list of strings
 	reviewArray = []
 	#print(len(reviewList))
 	for item in reviewList: # for each review string in review list
@@ -143,7 +143,7 @@ def searchB(keyword):
 	
 		
 	
-def searchC(keywords, reviewArray):
+def searchC(keywords, reviewArray, lenSet):
 	#print("Search C started")
 	results = []
 	keyword = keywords
@@ -151,45 +151,51 @@ def searchC(keywords, reviewArray):
 	keyword = textFilter(keyword)
 	keyword = stemTokens(keyword, stemmer)
 	resetWeight(reviewArray)
-	
-	#print("searching for: ")
-	#for word in keyword:
-	#	print(word)
-				
+	numReviews = len(reviewArray)
 	
 	for rev in reviewArray:
 		review = rev.revBody
 		review = getTokens(review)
 		review = textFilter(review)
-		review = stemTokens(review, stemmer)	
-		fdist = FreqDist(review)
+		review = stemTokens(review, stemmer)
+		fdist = FreqDist(review) 				#frequency distribution of the review
 		for word in keyword:
-			#rev.revWeight = rev.revWeight + float(fdist[str(word)])
-			tempWeight = float(fdist[str(word)])
-			if tempWeight == 0:
-				rev.revWeight = rev.revWeight + 0 
-			elif tempWeight == 1:
-				rev.revWeight = rev.revWeight + 1
-			elif tempWeight == 2:
-				rev.revWeight = rev.revWeight+ 2
-			elif tempWeight == 3:
-				rev.revWeight = rev.revWeight+ 3
-			elif tempWeight == 4:
-				rev.revWeight = rev.revWeight+ 4
+			if lenSet == "0":
+				length = len(review)+1
+				rev.revWeight = (rev.revWeight + (float(fdist[str(word)])) / length)
 			else:
-				rev.revWeight = rev.revWeight+5
+				rev.revWeight = rev.revWeight + (float(fdist[str(word)]))
+		results.append(rev)
+			# tempWeight = float(fdist[str(word)])
+			# if tempWeight == 0:
+			# 	rev.revWeight = rev.revWeight + 0 
+			# elif tempWeight == 1:
+			# 	rev.revWeight = rev.revWeight + 1
+			# elif tempWeight == 2:
+			# 	rev.revWeight = rev.revWeight+ 2
+			# elif tempWeight == 3:
+			# 	rev.revWeight = rev.revWeight+ 3
+			# elif tempWeight == 4:
+			# 	rev.revWeight = rev.revWeight+ 4
+			# else:
+			# 	rev.revWeight = rev.revWeight+5
 		
-		if all((w in review for w in keyword)):
-			rev.revWeight = rev.revWeight + 4
-		
-		if " ".join(keywords) in rev.revBody:
-			rev.revWeight = rev.revWeight + 6
+		# if all((w in review for w in keyword)):
+		# 	rev.revWeight = rev.revWeight + 4
+		# 
+		# if " ".join(keywords) in rev.revBody:
+		# 	rev.revWeight = rev.revWeight + 6
 			
 	#	rev.revWeight = fdist[str(keyword[0])]
 	
-		if rev.revWeight > 0.5:
-			results.append(rev)
+		#if rev.revWeight > 0.5:
+		
+		
 #  	#print the top 10
+
+
+
+
 	results.sort(key = lambda x: x.revWeight)
 	#remove where 0
 	
@@ -202,6 +208,10 @@ def resetWeight(reviews):
 
 def r2json(results, clientCode):
 	#print("r2json started. converting restults to json")
+	if len(results) == 0:
+		rev = Review(1,"Sorry, but no reviews were found for that query. Try widening your search critera.", 1)
+		results.append(rev)
+		
 	lines = []
 	simplejson = json
 	f = open(clientCode+".txt","w")
@@ -258,9 +268,11 @@ def main(message, clientCode):
 	url = args[1]
 	rating = args[2]
 	type = args[3]
+	lenSet = args[4]
 	
-	#print(rating)
-	#print(type)
+	print("Selected type: " + str(type))
+	print("Selected ratings: " + str(rating))
+	print(lenSet)
 	
 	# if url exists within server.urlarray / temp remove this
 #	import server
@@ -270,10 +282,10 @@ def main(message, clientCode):
 #		r2json(results)
 #	server.currenturl = url	
 
-	reviewArray = createRevArray(url, keywords)
+	reviewArray = createRevArray(url, keywords, str(type), str(rating))
 	#print(reviewArray)
 #	server.serverReviewArray = reviewArray
-	results = searchC(keywords, reviewArray)
+	results = searchC(keywords, reviewArray, lenSet)
 	r2json(results, clientCode)
 
 
