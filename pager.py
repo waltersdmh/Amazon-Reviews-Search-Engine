@@ -19,31 +19,26 @@ keywords = ""
 
 
 
-
-
-
-
-
    #threading 
 
-def pageScraper():
+def pageScraper(addType, addRating):
     global numpage
     #print(numPage)
     threadGap = int(numPage/4)
     
     if numPage <= 1:
         if threading.current_thread().getName() == "t1":
-            getPages(0, 1)
+            getPages(0, 1, addType, addRating)
             
 #    print(threading.current_thread().getName())
     if threading.current_thread().getName() == "t1":
-        getPages(1, threadGap)
+        getPages(1, threadGap, addType, addRating)
     elif threading.current_thread().getName() == "t2":
-        getPages(threadGap + 1, threadGap * 2)
+        getPages(threadGap + 1, threadGap * 2, addType, addRating)
     elif threading.current_thread().getName() == "t3":
-        getPages(((threadGap * 2) + 1), threadGap * 3)
+        getPages(((threadGap * 2) + 1), threadGap * 3, addType, addRating)
     elif threading.current_thread().getName() == "t4":
-        getPages(((threadGap * 3) + 1), numPage)
+        getPages(((threadGap * 3) + 1), numPage, addType, addRating)
 
 
 
@@ -58,7 +53,7 @@ def random_spoof():
 
 
 
-def getPages(beg, end):
+def getPages(beg, end, addType, addRating):
     global asin
     global reviews
     global numPage
@@ -72,7 +67,7 @@ def getPages(beg, end):
         print("Thread ", threading.current_thread().getName(), " is fetching", pageNum+beg)
         #print(pageNum+beg)
         req = urllib.request.Request(
-        url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=" + str(pageNum + beg) + "&filterByKeyword=" + keywords, 
+        url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType="+addType+"&showViewpoints=1&sortBy=helpful&pageNumber=" + str(pageNum + beg) + addRating + "&filterByKeyword=" + keywords, 
         data=None, 
         headers={'User-Agent':random_spoof()
     })
@@ -91,7 +86,7 @@ def getPages(beg, end):
 #input: url of product page (initially amazon, then other websties)
 #output: list of url's of the prodicts review page.
 
-def getReviewPages(url, searchTerms):
+def getReviewPages(url, searchTerms, addType, addRating):
     global keywords
     keywords = searchTerms.replace(" ","+") # keywords seperated by +. W
     
@@ -109,15 +104,12 @@ def getReviewPages(url, searchTerms):
     
     position = url.index("ref=")-11
     #print(position)
-    
-    
     global asin
     asin = url[position:position+10]
     
-
     
     req = urllib.request.Request(
-    url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=1&filterByKeyword=" + keywords, 
+    url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=" + addType + "&showViewpoints=1&sortBy=helpful&pageNumber=1"+ addRating + "&filterByKeyword=" + keywords, 
     data=None, 
     headers={'User-Agent':random_spoof()
         #'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
@@ -141,60 +133,12 @@ def getReviewPages(url, searchTerms):
     numPage = int(numPage)
     print("Number of pages: "  + str(numPage))
     
-    
-    
-    
-    #for row in soup.find_all('div',attrs={"class" : "a-section a-spacing-none review-views celwidget"}):
-       # print(row.text)
-    #print(soup)
-    #for row in soup.find_all('li',attrs={"class" : "page-button"}):
-    #    print(row.text)
-    #    global numPage
-    #    numPage = int(row.text)
-    #    print(numPage)
-   
-    
-    
-    
-    
- #   for row in soup.find_all('li',attrs={"class" : "page-button"}):
-  #      print(row.text)
-    
-    
-    
-    #stringNum = soup.find("div", id="cm_cr-review_list").find("div", class_="a-section a-spacing-medium").find("span", class_="a-size-base").text
-    #print(stringNum)
-    
-    
-
-  #  numPage.replace(" ", "")
-   # numPage = int(numPage)
-    #print(stringNum)
-   # global numPage
-#    numPage = ''.join(x for x in stringNum if x.isdigit())
-    
-    
-    
-    
-
-    
-
-
-
-    #print("number of reviews:")
-    #print(numPage)
-    #print(type(numPage))
-   # numPage = int(numPage)
-   # numPage = numPage / 10
-   # numPage = round(numPage) + 1
-    #print("number of pages:")
-    #print(numPage)
     pageNum = 1
     
-    t1 = threading.Thread(name = "t1", target=pageScraper)
-    t2 = threading.Thread(name = "t2", target=pageScraper)
-    t3 = threading.Thread(name = "t3", target=pageScraper)
-    t4 = threading.Thread(name = "t4", target=pageScraper)
+    t1 = threading.Thread(name = "t1", target=pageScraper,args=(addType, addRating))
+    t2 = threading.Thread(name = "t2", target=pageScraper,args=(addType, addRating))
+    t3 = threading.Thread(name = "t3", target=pageScraper,args=(addType, addRating))
+    t4 = threading.Thread(name = "t4", target=pageScraper,args=(addType, addRating))
     
     
     t1.start()
@@ -255,11 +199,38 @@ def getReviewPages(url, searchTerms):
  #   print(len(reviews))
     
     
-def startGetPages(url, searchTerms):
+def startGetPages(url, searchTerms, type, rating):
+    
+    
+    addType = ""
+    addRating = ""
+    
+    if str(type) == "1":
+        addType = "all_reviews"
+    else:
+        addType = "avp_only_reviews"
+        
+    nrating = str(rating)
+    if nrating == "6":
+        addRating = "&filterByStar=all_stars"
+    elif nrating == "5":
+        addRating = "&filterByStar=five_star"
+    elif nrating == "4":
+        addRating = "&filterByStar=four_star"
+    elif nrating == "3":
+        addRating = "&filterByStar=three_star"
+    elif nrating == "2":
+        addRating = "&filterByStar=two_star"
+    elif nrating == "1":
+        addRating = "&filterByStar=one_star"
+    
+    
+
+    
     reviews = []
     for num in range(3):
         try:
-            reviews = getReviewPages(url, searchTerms)
+            reviews = getReviewPages(url, searchTerms, addType, addRating)
             if len(reviews)>=1:
                 break
         except Exception as e:
