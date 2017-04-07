@@ -1,4 +1,6 @@
+# pager.py
 # given a url, gets all the reviews for a product.
+# updated to use search terms to build an amazon search url, reducing wasted time fecthing un-needed reviews.
 
 
 import urllib.request
@@ -19,18 +21,14 @@ keywords = ""
 
 
 
-   #threading 
+#threading
 
 def pageScraper(addType, addRating):
     global numpage
-    #print(numPage)
     threadGap = int(numPage/4)
-    
     if numPage <= 1:
         if threading.current_thread().getName() == "t1":
             getPages(0, 1, addType, addRating)
-            
-#    print(threading.current_thread().getName())
     if threading.current_thread().getName() == "t1":
         getPages(1, threadGap, addType, addRating)
     elif threading.current_thread().getName() == "t2":
@@ -48,24 +46,16 @@ def random_spoof():
     return(choice(UAS))
 
 
-
-
-
-
-
 def getPages(beg, end, addType, addRating):
     global asin
     global reviews
     global numPage
     duration = end - beg
     pageNum = 1
-    
-    
     if duration == 0:
         duration =1
     for page in range(duration):
         print("Thread ", threading.current_thread().getName(), " is fetching", pageNum+beg)
-        #print(pageNum+beg)
         req = urllib.request.Request(
         url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType="+addType+"&showViewpoints=1&sortBy=helpful&pageNumber=" + str(pageNum + beg) + addRating + "&filterByKeyword=" + keywords, 
         data=None, 
@@ -80,34 +70,19 @@ def getPages(beg, end, addType, addRating):
 
 
 
-
-
-
-#input: url of product page (initially amazon, then other websties)
-#output: list of url's of the prodicts review page.
+#input: url of product page 
+#output: numPage (the total number of pages) and a call to pageScraper
 
 def getReviewPages(url, searchTerms, addType, addRating):
     global keywords
     keywords = searchTerms.replace(" ","+") # keywords seperated by +. W
-    
     print("Keyterms: " + keywords)
     global reviews #provide access the to global reviews var
     reviews = []
     position = 0
-    # try:
-    #     position = url.index("/dp/")+4 #position in the url to get asin. need to rework
-    #     print(position)
-    # except ValueError:
-    #     position = url.index("/product/")+9
-    #     print(position)
-    #print(position)
-    
     position = url.index("ref=")-11
-    #print(position)
     global asin
     asin = url[position:position+10]
-    
-    
     req = urllib.request.Request(
     url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=" + addType + "&showViewpoints=1&sortBy=helpful&pageNumber=1"+ addRating + "&filterByKeyword=" + keywords, 
     data=None, 
@@ -116,13 +91,7 @@ def getReviewPages(url, searchTerms, addType, addRating):
     })
     f = urllib.request.urlopen(req)
     soup = BeautifulSoup(f, "html.parser")
-        
-
-#find out how many reviews there are on amazon, with the given keyterms   
-
-
     stringNum = soup.find("div", id="cm_cr-review_list").find("div", class_="a-section a-spacing-medium").find("span", class_="a-size-base").text
-# print(stringNum) 
     start = "of"
     end = "reviews"
     str(stringNum)
@@ -161,55 +130,18 @@ def getReviewPages(url, searchTerms, addType, addRating):
         
 
     
-    
-# t1.join()
-# t2.join()
-# t3.join()
-# t4.join()  
-
-       
-        
-        
-    #for every page, get all reviews. #second delay. for testing purposes, change numPage to small number.
-    # for page in range(numPage):
-    #     print("fetching page")
-    #     print(pageNum)
-    #   #  time.sleep(random.randrange(1))
-    #     req = urllib.request.Request(
-    #     url = "https://www.amazon.co.uk/product-reviews/" + asin + "/ref=cm_cr_arp_d_paging_btm_2?ie=UTF8&reviewerType=all_reviews&showViewpoints=1&sortBy=helpful&pageNumber=" + str(pageNum), 
-    #     data=None, 
-    #     headers={
-    #         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
-    #     })
-    #     f = urllib.request.urlopen(req)
-    #     soup = BeautifulSoup(f, "html.parser")
-    #     for row in soup.find_all('div',attrs={"class" : "a-row review-data"}):
-    #         reviews.append(row.text)
-    #     pageNum = pageNum + 1
-    #     
-        
-        
-        
-        
-        
-        
-        
-
- #   print(*reviews, sep='\n')
- #   print(len(reviews))
-    
+#startGetPages
+#input: url, searchTerms, type(verified), rating
+#output: list of review bodies
+#calls: getReviewPages
     
 def startGetPages(url, searchTerms, type, rating):
-    
-    
     addType = ""
-    addRating = ""
-    
+    addRating = ""    
     if str(type) == "1":
         addType = "all_reviews"
     else:
-        addType = "avp_only_reviews"
-        
+        addType = "avp_only_reviews"        
     nrating = str(rating)
     if nrating == "6":
         addRating = "&filterByStar=all_stars"
@@ -223,10 +155,6 @@ def startGetPages(url, searchTerms, type, rating):
         addRating = "&filterByStar=two_star"
     elif nrating == "1":
         addRating = "&filterByStar=one_star"
-    
-    
-
-    
     reviews = []
     for num in range(3):
         try:
@@ -238,7 +166,7 @@ def startGetPages(url, searchTerms, type, rating):
             print(str(e))
             time.sleep(random.randint(1,2))
             continue
-    print(len(reviews))
+    #print(len(reviews))
     return reviews
     
    
