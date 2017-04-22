@@ -86,7 +86,7 @@ def searchA(keyword):
 	return results
 
 	
-			
+# Search A + language processing techniques but no ordering			
 def searchB(keyword):
 	results = []
 	keyword = getTokens(keyword)
