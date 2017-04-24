@@ -6,11 +6,13 @@ import os
 import pager
 import json
 
-
+#input: url + filters + key-terms
+#output: a list of reviews
 def inputFileToList(url, keywords, type, rating):
     reviewList = pager.startGetPages(url, keywords, type, rating)
     return reviewList
 
+#tester - print 
 def printLine(lineNo):
 	thisList = inputFileToList()
 
@@ -73,7 +75,6 @@ def stemTokens(tokens, stemmer):
 stemmer = PorterStemmer()
 
 	
-
 #traditional -in order of occurance - search used by amazon
 #input keyword or phrase
 def searchA(keyword):
@@ -105,6 +106,7 @@ def searchB(keyword):
 			print("found match")			
 	return results
 	
+#Search C - full searching tool with relative frequency distribution applied
 #input: key-terms, list of reviews, long review preference(boolean)
 #output: ordered list of reviews. 			
 def searchC(keywords, reviewArray, lenSet):
@@ -134,10 +136,13 @@ def searchC(keywords, reviewArray, lenSet):
 	results.reverse() #reverse results, higher weighting first.
 	return results
 
+#clear rev.weight values
 def resetWeight(reviews):
 	for rev in reviews:
 		rev.revWeight = 0;
 
+#input: results, client identifier
+#output: JSON file - list of reviews to send to client
 def r2json(results, clientCode):
 	if len(results) == 0:
 		rev = Review(1,"Sorry, but no reviews were found for that query. Try widening your search critera.", 1)
@@ -150,7 +155,11 @@ def r2json(results, clientCode):
 	simplejson.dump(lines, f)
 	f.close()
 
-
+#main method
+#1. interpret message settings 
+#2. create review array
+#3. apply search c
+#4. format to json s
 def main(message, clientCode):
 	args = message.split(",")
 	keywords = args[0]
