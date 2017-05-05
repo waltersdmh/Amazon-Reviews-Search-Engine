@@ -98,6 +98,7 @@ def getReviewPages(url, searchTerms, addType, addRating):
     global numPage
     numPage = re.search('%s(.*)%s' % (start, end), stringNum).group(1) #w
     numPage.replace(" ", "")
+    numPage = "".join(c for c in numPage if c not in (','))
     numPage = int(numPage)/10
     numPage = int(numPage)
     print("Number of pages: "  + str(numPage))

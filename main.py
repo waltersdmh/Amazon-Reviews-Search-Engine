@@ -163,6 +163,15 @@ def r2json(results, clientCode):
 def main(message, clientCode):
 	args = message.split(",")
 	keywords = args[0]
+	
+# filtering the search terms for more results.
+
+	newKey = keywords.split()
+	newKey2 = textFilter(newKey)
+	newKey3 = " ".join(str(n) for n in newKey2)
+	print("filtered input: " + newKey3)
+	keywords = newKey3
+
 	url = args[1]
 	rating = args[2]
 	type = args[3]
