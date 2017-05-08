@@ -178,6 +178,8 @@ def main(message, clientCode):
 	lenSet = args[4]
 	reviewArray = createRevArray(url, keywords, str(type), str(rating))
 	results = searchC(keywords, reviewArray, lenSet)
+	
+	
 	r2json(results, clientCode)
 
 

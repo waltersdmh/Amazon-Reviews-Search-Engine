@@ -20,6 +20,7 @@ asin =""
 keywords = ""
 
 
+
 #threading
 #4 threads current best performance. more resulted in too many CAPTCHA interruptions.
 #allocate blocks of work for each thread here, and give them a name.  
@@ -102,6 +103,8 @@ def getReviewPages(url, searchTerms, addType, addRating):
     numPage = int(numPage)/10
     numPage = int(numPage)
     print("Number of pages: "  + str(numPage))
+    if numPage > 30:
+         numPage = 30
     
     pageNum = 1
     
