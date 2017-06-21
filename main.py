@@ -5,12 +5,15 @@ from nltk import FreqDist
 import os
 import pager
 import json
+import threading
+
+results = []
 
 #input: url + filters + key-terms
 #output: a list of reviews
 def inputFileToList(url, keywords, type, rating):
-    reviewList = pager.startGetPages(url, keywords, type, rating)
-    return reviewList
+	reviewList = pager.startGetPages(url, keywords, type, rating)
+	return reviewList
 
 #tester - print 
 def printLine(lineNo):
@@ -74,43 +77,15 @@ def stemTokens(tokens, stemmer):
 #define the stemmer we are using. used in stemTokens
 stemmer = PorterStemmer()
 
-	
-#traditional -in order of occurance - search used by amazon
-#input keyword or phrase
-def searchA(keyword):
-	results = []
-	for rev in reviewArray:
-		review = rev.revBody
-		if keyword in review:
-			print("found match")
-			results.append(rev)		
-	return results
+		
 
-	
-# Search A + language processing techniques but no ordering			
-def searchB(keyword):
-	results = []
-	keyword = getTokens(keyword)
-	keyword = textFilter(keyword)
-	keyword = stemTokens(keyword, stemmer)
-	# print("searching for: ")
-	# for word in keyword:
-	# 	print(word)
-	for rev in reviewArray:
-		review = rev.revBody
-		review = getTokens(review)
-		review = textFilter(review)
-		review = stemTokens(review, stemmer)
-		if all((w in review for w in keyword)):
-			results.append(rev)
-			print("found match")			
-	return results
 	
 #Search C - full searching tool with relative frequency distribution applied
 #input: key-terms, list of reviews, long review preference(boolean)
 #output: ordered list of reviews. 			
 def searchC(keywords, reviewArray, lenSet):
-	results = []
+	global results
+	
 	#format key-terms
 	keyword = keywords
 	keyword = getTokens(keyword)
@@ -118,7 +93,49 @@ def searchC(keywords, reviewArray, lenSet):
 	keyword = stemTokens(keyword, stemmer)
 	resetWeight(reviewArray)
 	numReviews = len(reviewArray)
-	for rev in reviewArray:
+	
+	#threading start
+	t1 = threading.Thread(name = "t1", target=sendThreads,args=(reviewArray, numReviews, keyword, lenSet))
+	t2 = threading.Thread(name = "t2", target=sendThreads,args=(reviewArray, numReviews, keyword, lenSet))
+	t3 = threading.Thread(name = "t3", target=sendThreads,args=(reviewArray, numReviews, keyword, lenSet))
+	t4 = threading.Thread(name = "t4", target=sendThreads,args=(reviewArray, numReviews, keyword, lenSet))
+	   
+	t1.start()
+	t2.start()
+	t3.start()
+	t4.start()
+	  
+	
+	t1.join()
+	t2.join()
+	t3.join()
+	t4.join()
+	
+	results.sort(key = lambda x: x.revWeight)
+	results.reverse() #reverse results, higher weighting first.
+	
+	
+	
+def sendThreads(reviewArray, numReviews, keyword, lenSet): 
+	threadGap = int(numReviews/4)
+
+	if threading.current_thread().getName() == "t1":
+		orderRev(reviewArray, keyword, lenSet, 0, threadGap * 1)
+		
+	elif threading.current_thread().getName() == "t2":
+		orderRev(reviewArray, keyword, lenSet, (threadGap * 1 + 1), threadGap * 2)
+		
+	elif threading.current_thread().getName() == "t3":
+		orderRev(reviewArray, keyword, lenSet, (threadGap * 2 + 1), threadGap * 3)
+		
+	elif threading.current_thread().getName() == "t4":
+		orderRev(reviewArray, keyword, lenSet, (threadGap * 3 + 1), threadGap * 4)	
+	
+	
+	
+def orderRev(reviewArray, keyword, lenSet, start, end):	
+	global results
+	for rev in reviewArray[start:end]:
 		review = rev.revBody
 		#format review body
 		review = getTokens(review)
@@ -132,9 +149,11 @@ def searchC(keywords, reviewArray, lenSet):
 			else: #user prefer longer reviews
 				rev.revWeight = rev.revWeight + (float(fdist[str(word)]))
 		results.append(rev)
-	results.sort(key = lambda x: x.revWeight)
-	results.reverse() #reverse results, higher weighting first.
-	return results
+		
+
+	
+
+
 
 #clear rev.weight values
 def resetWeight(reviews):
@@ -143,7 +162,8 @@ def resetWeight(reviews):
 
 #input: results, client identifier
 #output: JSON file - list of reviews to send to client
-def r2json(results, clientCode):
+def r2json(clientCode):
+	global results
 	if len(results) == 0:
 		rev = Review(1,"Sorry, but no reviews were found for that query. Try widening your search critera.", 1)
 		results.append(rev)		
@@ -154,6 +174,10 @@ def r2json(results, clientCode):
 		lines.append(rev.revBody)
 	simplejson.dump(lines, f)
 	f.close()
+	results = []
+	
+def printHello():
+	print("hello from " + str(print(threading.current_thread().getName())))
 
 #main method
 #1. interpret message settings 
@@ -161,6 +185,8 @@ def r2json(results, clientCode):
 #3. apply search c
 #4. format to json s
 def main(message, clientCode):
+	
+	
 	args = message.split(",")
 	keywords = args[0]
 	
@@ -177,10 +203,12 @@ def main(message, clientCode):
 	type = args[3]
 	lenSet = args[4]
 	reviewArray = createRevArray(url, keywords, str(type), str(rating))
+	
+
 	results = searchC(keywords, reviewArray, lenSet)
 	
 	
-	r2json(results, clientCode)
+	r2json(clientCode)
 
 
 
